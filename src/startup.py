@@ -10,8 +10,11 @@ def read_startup_script(path):
     return Path(path).read_text(encoding="utf-8-sig").splitlines()
 
 
-def run_startup_script(path, prompt, show_output):
-    """Выполнить команды скрипта, пропуская ошибочные строки."""
+def run_startup_script(path, prompt, show_output, executor=None):
+    """Выполнить команды, продолжая работу после ошибок."""
+    if executor is None:
+        executor = execute_command
+
     try:
         lines = read_startup_script(path)
     except (OSError, UnicodeError) as error:
@@ -23,7 +26,7 @@ def run_startup_script(path, prompt, show_output):
             continue
 
         show_output(f"{prompt}{line}")
-        result = execute_command(line)
+        result = executor(line)
 
         if result.output:
             show_output(result.output)

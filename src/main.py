@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import scrolledtext
 
 from src.config import format_config, parse_config
-from src.shell import execute_command
+from src.shell import ShellSession
 from src.startup import run_startup_script
 from src.vfs import format_vfs_info, load_vfs
 
@@ -22,7 +22,7 @@ class ShellWindow:
         """Настроить интерфейс и загрузить конфигурацию."""
         self.root = root
         self.config = config
-        self.vfs = None
+        self.session = ShellSession()
         username = getpass.getuser()
         hostname = socket.gethostname()
         root.title(f"Эмулятор - [{username}@{hostname}]")
@@ -67,24 +67,25 @@ class ShellWindow:
         print(message)
 
     def load_virtual_filesystem(self):
-        """Загрузить VFS из директории в оперативную память."""
+        """Загрузить VFS в память и подключить её к сессии."""
         if not self.config.vfs_path:
             self.append_history("VFS: путь не задан.")
             return
 
         try:
-            self.vfs = load_vfs(self.config.vfs_path)
+            vfs = load_vfs(self.config.vfs_path)
         except ValueError as error:
             self.append_history(f"Ошибка VFS: {error}")
             return
 
-        message = format_vfs_info(self.vfs)
+        self.session.vfs = vfs
+        message = format_vfs_info(vfs)
         self.append_history(message)
         self.append_history("")
         print(message)
 
     def run_startup(self):
-        """Выполнить команды стартового скрипта."""
+        """Выполнить стартовый скрипт в текущей сессии."""
         if not self.config.startup_path:
             return
 
@@ -92,6 +93,7 @@ class ShellWindow:
             self.config.startup_path,
             self.config.prompt,
             self.append_history,
+            self.session.execute,
         )
         if should_exit:
             self.root.destroy()
@@ -104,7 +106,7 @@ class ShellWindow:
             return
 
         self.append_history(f"{self.config.prompt}{line}")
-        result = execute_command(line)
+        result = self.session.execute(line)
         if result.output:
             self.append_history(result.output)
         if result.should_exit:

@@ -1,0 +1,27 @@
+ls
+ls root.txt
+ls level1
+cd level1
+ls
+tac info.txt
+cd level2
+ls
+cd level3
+ls
+tac data.txt
+cd ..
+cd ..
+cd ..
+ls
+whoami
+ls missing
+cd missing
+tac missing.txt
+whoami extra
+ls level1 level2
+cd level1 level2
+tac
+unknown
+ls
+cd /
+ls
