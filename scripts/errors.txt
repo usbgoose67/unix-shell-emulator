@@ -1,0 +1,5 @@
+unknown
+ls "unfinished
+exit extra
+ls after_errors
+cd documents

@@ -1,0 +1,7 @@
+ls
+cd documents
+ls $USERNAME
+cd ${USERNAME}
+unknown
+ls after_error
+cd final_folder

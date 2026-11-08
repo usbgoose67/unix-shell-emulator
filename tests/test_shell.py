@@ -1,4 +1,4 @@
-"""Проверки команд и парсера первого этапа."""
+"""Тесты команд и парсера эмулятора."""
 
 import os
 import unittest
@@ -8,54 +8,60 @@ from src.shell import execute_command, parse_command
 
 
 class ShellTests(unittest.TestCase):
-    """Тесты интерактивных команд эмулятора."""
+    """Проверки команд первого и второго этапов."""
 
     def test_ls_without_arguments(self):
-        """Команда ls без аргументов возвращает заглушку."""
+        """Проверить ls без аргументов."""
         self.assertEqual(execute_command("ls").output, "ls: аргументы: []")
 
     def test_cd_with_arguments(self):
-        """Команда cd показывает полученные аргументы."""
+        """Проверить cd с аргументом."""
         self.assertEqual(
             execute_command("cd documents").output,
             "cd: аргументы: ['documents']",
         )
 
     def test_environment_variable(self):
-        """Переменная окружения раскрывается в аргументе."""
+        """Проверить раскрытие переменной окружения."""
         with patch.dict(os.environ, {"SHELL_TEST_VAR": "example"}):
             self.assertEqual(
                 parse_command("ls $SHELL_TEST_VAR"), ["ls", "example"]
             )
 
     def test_variable_in_braces(self):
-        """Переменная в фигурных скобках также раскрывается."""
+        """Проверить переменную в фигурных скобках."""
         with patch.dict(os.environ, {"SHELL_TEST_VAR": "example"}):
             self.assertEqual(
                 parse_command("cd ${SHELL_TEST_VAR}"), ["cd", "example"]
             )
 
     def test_unknown_command(self):
-        """Неизвестная команда возвращает ошибку."""
-        self.assertIn("неизвестная команда", execute_command("oops").output)
+        """Проверить сообщение о неизвестной команде."""
+        result = execute_command("oops")
+        self.assertIn("неизвестная команда", result.output)
 
     def test_exit(self):
-        """Команда exit запрашивает закрытие окна."""
+        """Проверить корректное завершение работы."""
         self.assertTrue(execute_command("exit").should_exit)
 
     def test_exit_with_arguments(self):
-        """Команда exit с аргументами возвращает ошибку."""
+        """Проверить ошибку аргументов exit."""
         result = execute_command("exit now")
         self.assertFalse(result.should_exit)
         self.assertIn("не принимает аргументы", result.output)
 
     def test_empty_input(self):
-        """Пустая строка не вызывает ошибку."""
+        """Проверить обработку пустого ввода."""
         self.assertEqual(execute_command("   ").output, "")
 
     def test_unclosed_quotes(self):
-        """Незакрытая кавычка возвращает сообщение об ошибке."""
+        """Проверить обработку незакрытых кавычек."""
         self.assertIn("Ошибка", execute_command('ls "oops').output)
+
+    def test_error_flag(self):
+        """Проверить признак ошибки выполнения."""
+        self.assertTrue(execute_command("unknown").is_error)
+        self.assertFalse(execute_command("ls").is_error)
 
 
 if __name__ == "__main__":

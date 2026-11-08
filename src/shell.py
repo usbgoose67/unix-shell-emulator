@@ -1,4 +1,4 @@
-"""Разбор и выполнение команд первого этапа эмулятора."""
+"""Разбор и выполнение команд эмулятора."""
 
 import os
 import re
@@ -15,13 +15,14 @@ class CommandResult:
 
     output: str
     should_exit: bool = False
+    is_error: bool = False
 
 
 def expand_variables(value):
-    """Раскрыть переменные окружения в одном аргументе."""
+    """Раскрыть переменные окружения в аргументе."""
 
     def replace_variable(match):
-        """Получить значение найденной переменной окружения."""
+        """Получить значение переменной окружения."""
         name = match.group(1).strip("{}")
         return os.environ.get(name, "")
 
@@ -29,7 +30,7 @@ def expand_variables(value):
 
 
 def parse_command(line):
-    """Разделить команду на имя и аргументы с раскрытием переменных."""
+    """Разделить команду и аргументы, раскрыв переменные."""
     try:
         parts = shlex.split(line, posix=False)
     except ValueError as error:
@@ -40,11 +41,11 @@ def parse_command(line):
 
 
 def execute_command(line):
-    """Выполнить команду-заглушку или вернуть сообщение об ошибке."""
+    """Выполнить команду и вернуть результат."""
     try:
         parts = parse_command(line)
     except ValueError as error:
-        return CommandResult(f"Ошибка: {error}")
+        return CommandResult(f"Ошибка: {error}", is_error=True)
 
     if not parts:
         return CommandResult("")
@@ -52,10 +53,16 @@ def execute_command(line):
     command, *arguments = parts
     if command == "exit":
         if arguments:
-            return CommandResult("Ошибка: exit не принимает аргументы")
+            return CommandResult(
+                "Ошибка: exit не принимает аргументы",
+                is_error=True,
+            )
         return CommandResult("Завершение работы", should_exit=True)
 
     if command in ("ls", "cd"):
         return CommandResult(f"{command}: аргументы: {arguments}")
 
-    return CommandResult(f"Ошибка: неизвестная команда '{command}'")
+    return CommandResult(
+        f"Ошибка: неизвестная команда '{command}'",
+        is_error=True,
+    )
