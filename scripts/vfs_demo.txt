@@ -1,0 +1,12 @@
+ls
+ls documents
+cd documents
+cd ..
+ls $USERNAME
+cd ${USERNAME}
+unknown
+ls after_error
+exit extra
+cd after_exit_error
+ls "unfinished
+ls after_quote_error
