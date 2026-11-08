@@ -1,0 +1,29 @@
+ls
+ls -l
+cp root.txt copy.txt
+ls
+chown alice copy.txt
+ls -l
+cp root.txt level1
+ls level1
+cp -r level1 backup
+ls
+ls backup
+ls backup/level2/level3
+tac backup/level2/level3/data.txt
+chown -R bob backup
+ls -l backup
+ls -l backup/level2
+ls -l backup/level2/level3
+cp missing.txt other.txt
+cp level1 no_recursive
+cp -r level1 level1/level2/inside
+chown alice missing.txt
+chown alice
+cp root.txt
+unknown
+whoami
+cd backup
+ls
+cd /
+ls
